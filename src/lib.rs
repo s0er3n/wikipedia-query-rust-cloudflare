@@ -27,7 +27,7 @@ struct Parse {
     title: String,
 }
 async fn make_query(target: &str) -> Wiki {
-    let resp_txt = reqwest::get(format!("https://en.wikipedia.org/wiki/{}", target))
+    let resp_txt = reqwest::get(format!("https://en.wikipedia.org/wiki/{}?useskin=vector", target))
         .await
         .unwrap()
         .text()
