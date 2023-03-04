@@ -27,12 +27,12 @@ struct Parse {
     text: HashMap<String, String>,
     title: String,
 }
-async fn make_query(target: &str, headers_req: &Headers) -> Wiki {
+async fn make_query(country: &str, target: &str, headers_req: &Headers) -> Wiki {
     let client = reqwest::Client::new();
     let resp_txt = client
         .get(format!(
-            "https://en.wikipedia.org/wiki/{}?useskin=vector",
-            target
+            "https://{}.wikipedia.org/wiki/{}?useskin=vector",
+            country, target
         ))
         .header(USER_AGENT, &headers_req.get("user-agent").unwrap().unwrap())
         .send()
@@ -125,12 +125,12 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
     // functionality and a `RouteContext` which you can use to  and get route parameters and
     // Environment bindings like KV Stores, Durable Objects, Secrets, and Variables.
     router
-        .get_async("/wiki/:article", |mut req, ctx| async move {
-            if let Some(name) = ctx.param("article") {
+        .get_async("/wiki/:country/:article", |mut req, ctx| async move {
+            if let (Some(name), Some(country)) = (ctx.param("article"), ctx.param("country")) {
                 let cors = worker::Cors::new()
                     .with_origins(["*"])
                     .with_methods([Method::Get]);
-                let response_json = make_query(name, req.headers()).await;
+                let response_json = make_query(country, name, req.headers()).await;
                 return Response::from_json(&response_json)?.with_cors(&cors);
             }
 
